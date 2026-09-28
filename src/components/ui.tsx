@@ -310,21 +310,46 @@ export function CopyableText({
   );
 }
 
-export function VariableText({ template }: { template: string }) {
-  const parts = template.split(/(\{\{\s*[a-zA-Z0-9_]+\s*\}\})/g);
+export function Modal({
+  open,
+  title,
+  onClose,
+  children,
+  footer,
+  wide = false,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  wide?: boolean;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-white px-3 py-3 text-[13px] leading-relaxed whitespace-pre-wrap">
-      {parts.map((part, i) =>
-        /^\{\{/.test(part) ? (
-          <span key={i} className="rounded bg-red-50 px-0.5 font-semibold text-red-600">
-            {part}
-          </span>
-        ) : (
-          <span key={i} className="text-slate-700">
-            {part}
-          </span>
-        ),
-      )}
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/40 p-4 fade-in" onClick={onClose}>
+      <div
+        className={`mt-6 w-full rounded-xl bg-white shadow-2xl ${wide ? "max-w-4xl" : "max-w-2xl"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+          <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+          <button type="button" onClick={onClose} className="rounded px-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            ✕
+          </button>
+        </div>
+        <div className="max-h-[72vh] overflow-auto p-4">{children}</div>
+        {footer ? <div className="flex justify-end gap-2 border-t border-[var(--border)] px-4 py-3">{footer}</div> : null}
+      </div>
     </div>
   );
 }

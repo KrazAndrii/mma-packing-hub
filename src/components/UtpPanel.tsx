@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { buildUtpBadges } from "@/lib/utp";
 import { aiUtp } from "@/lib/ai/provider";
-import { Badge, Button, CopyableText, Section, TextArea } from "./ui";
+import { Badge, Button, CopyButton, Section, TextArea } from "./ui";
 
 export function UtpPanel() {
   const products = useAppStore((s) => s.products);
@@ -43,6 +43,7 @@ export function UtpPanel() {
         subtitle="Короткі переваги (до 3 слів), які ставляться як значки на коробці"
         right={
           <div className="flex gap-2">
+            <CopyButton text={badges.join("\n")} />
             <Button size="sm" variant="secondary" onClick={() => setUtp(product.id, auto)}>
               Згенерувати
             </Button>
@@ -68,8 +69,6 @@ export function UtpPanel() {
         />
         {note ? <p className="mt-2 text-xs text-slate-600">{note}</p> : null}
       </Section>
-
-      <CopyableText title="Значки УТП (для копіювання)" text={badges.join("\n")} rows={6} />
     </div>
   );
 }

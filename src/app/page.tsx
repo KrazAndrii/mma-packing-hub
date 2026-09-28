@@ -18,8 +18,6 @@ import {
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { getCategory } from "@/lib/categories";
 import { getProfile } from "@/lib/profiles";
-import { runRules } from "@/lib/rules/engine";
-import { activeVariant } from "@/lib/defaults";
 
 const TITLES: Record<View, string> = {
   data: "Дані товару",
@@ -42,7 +40,6 @@ export default function Home() {
   const setActive = useAppStore((s) => s.setActive);
   const brandId = useAppStore((s) => s.brandId);
   const categories = useAppStore((s) => s.categories);
-  const rules = useAppStore((s) => s.rules);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -56,9 +53,6 @@ export default function Home() {
   const product = products.find((p) => p.id === activeId) ?? null;
   const category = getCategory(categories, product?.category ?? "azu");
   const profile = getProfile(brandId);
-  const errors = product
-    ? runRules(product.spec, rules, profile).filter((r) => !r.passed && r.severity === "error").length
-    : 0;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -78,11 +72,7 @@ export default function Home() {
             ) : null}
           </div>
           {view !== "settings" && product ? (
-            <div className="flex items-center gap-3 text-[11px] text-slate-500">
-              <span>EAN: {activeVariant(product)?.ean13 || "—"}</span>
-              {errors ? <span className="rounded bg-red-50 px-2 py-0.5 font-medium text-red-600">{errors} помилок</span> : null}
-              <span className="hidden rounded bg-slate-100 px-2 py-0.5 sm:inline">{profile.name}</span>
-            </div>
+            <span className="hidden rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 sm:inline">{profile.name}</span>
           ) : null}
         </header>
         {view !== "settings" ? <ValidationBar /> : null}

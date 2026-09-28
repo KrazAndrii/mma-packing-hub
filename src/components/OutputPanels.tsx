@@ -238,45 +238,6 @@ export function BarcodePanel() {
   );
 }
 
-export function CheckPanel() {
-  const { product, rules, profile } = useActive();
-  if (!product) return <div className="p-6 text-sm text-slate-500">Оберіть товар.</div>;
-  const results = runRules(product.spec, rules, profile);
-  const failed = results.filter((r) => !r.passed);
-  const report = failed
-    .map((r) => `[${r.severity === "error" ? "ПОМИЛКА" : "УВАГА"}] ${r.title}: ${r.message}${r.details?.length ? " — " + r.details.join("; ") : ""}`)
-    .join("\n");
-
-  return (
-    <div className="space-y-4 p-4">
-      <p className="text-xs text-slate-500">
-        Перевірка виконується автоматично. Нічого не виправляється самостійно — лише позначається.
-      </p>
-      <div className="space-y-2">
-        {results.map((r) => (
-          <div key={r.ruleId} className={`rounded-lg border border-[var(--border)] bg-white px-3 py-2 ${r.passed ? "opacity-60" : ""}`}>
-            <div className="flex items-start gap-2">
-              <StatusDot severity={r.passed ? "ok" : r.severity} />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-800">{r.title}</p>
-                {!r.passed ? <p className="text-xs text-slate-600">{r.message}</p> : null}
-                {r.details?.length ? (
-                  <ul className="mt-1 list-inside list-disc text-[11px] text-slate-500">
-                    {r.details.map((d, i) => (
-                      <li key={i}>{d}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <CopyableText title="Зауваження для фабрики (копіювати, не файл)" text={report || "Зауважень немає."} rows={8} />
-    </div>
-  );
-}
-
 export function ValidationBar() {
   const { product, rules, profile } = useActive();
   const [open, setOpen] = useState(false);
@@ -435,7 +396,6 @@ export function ExportPanel() {
           Завантажити резервну копію (JSON)
         </Button>
       </Section>
-      <CopyRowPanel />
     </div>
   );
 }

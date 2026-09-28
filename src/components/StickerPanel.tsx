@@ -7,7 +7,7 @@ import { activeVariant } from "@/lib/defaults";
 import { buildStickerContext, fillTemplate, extractVariables } from "@/lib/sticker/fill";
 import { downloadText } from "@/lib/export";
 import type { ProductSpec } from "@/lib/types";
-import { Badge, Button, CopyButton, Field, Section, TextArea, TextInput } from "./ui";
+import { Badge, Button, CopyButton, Field, Modal, Section, TextArea, TextInput } from "./ui";
 
 export function StickerPanel() {
   const products = useAppStore((s) => s.products);
@@ -176,15 +176,28 @@ function StickerModal({
   const val = (key: string, fallback: string) => overrides[key] ?? fallback;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/40 p-4">
-      <div className="w-full max-w-3xl rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-800">Дані для стікера</h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700">
-            ✕
-          </button>
-        </div>
-        <div className="grid max-h-[70vh] grid-cols-2 gap-3 overflow-auto p-4">
+    <Modal
+      open
+      wide
+      title="Дані для стікера"
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Закрити
+          </Button>
+          <Button
+            onClick={() => {
+              onApply();
+              onClose();
+            }}
+          >
+            Застосувати у стікер
+          </Button>
+        </>
+      }
+    >
+      <div className="grid grid-cols-2 gap-3">
           <Field label="Модель">
             <TextInput value={val("model", spec.model)} onChange={(v) => onChange("model", v)} />
           </Field>
@@ -254,21 +267,7 @@ function StickerModal({
           <Field label="Штрихкод EAN-13">
             <TextInput value={variantEan} onChange={(v) => onVariant({ ean13: v.replace(/[^\d]/g, "").slice(0, 13) })} />
           </Field>
-        </div>
-        <div className="flex justify-end gap-2 border-t border-[var(--border)] px-4 py-3">
-          <Button variant="secondary" onClick={onClose}>
-            Закрити
-          </Button>
-          <Button
-            onClick={() => {
-              onApply();
-              onClose();
-            }}
-          >
-            Застосувати у стікер
-          </Button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
