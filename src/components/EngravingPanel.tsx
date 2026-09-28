@@ -14,18 +14,20 @@ export function EngravingPanel() {
   const profileId = useProjectStore((s) => s.profileId);
   const format = useProjectStore((s) => s.format);
   const setFormat = useProjectStore((s) => s.setFormat);
+  const portLineStyle = useProjectStore((s) => s.portLineStyle);
+  const setPortLineStyle = useProjectStore((s) => s.setPortLineStyle);
   const [result, setResult] = useState<EngravingResult | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const profile = getProfile(profileId);
-  const plan = buildEngravingPlan(spec, profile, format);
+  const plan = buildEngravingPlan(spec, profile, { format, portLineStyle });
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
-    buildEngraving(spec, profile, { format })
+    buildEngraving(spec, profile, { format, portLineStyle })
       .then((r) => {
         if (!cancelled) setResult(r);
       })
@@ -38,7 +40,7 @@ export function EngravingPanel() {
     return () => {
       cancelled = true;
     };
-  }, [spec, profile, format]);
+  }, [spec, profile, format, portLineStyle]);
 
   return (
     <div className="space-y-4 p-4">
@@ -53,6 +55,16 @@ export function EngravingPanel() {
               { value: "compact", label: "Компактний (АЗУ, TWS)" },
             ]}
             className="!w-64"
+          />
+          <span className="field-label">Порти:</span>
+          <Select<"prefix" | "suffix">
+            value={portLineStyle}
+            onChange={setPortLineStyle}
+            options={[
+              { value: "prefix", label: "Output USB-C (як у регламенті)" },
+              { value: "suffix", label: "USB-C Output (як у таблиці)" },
+            ]}
+            className="!w-56"
           />
         </div>
         <div className="flex gap-2">

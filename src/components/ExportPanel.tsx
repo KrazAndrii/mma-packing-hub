@@ -14,6 +14,7 @@ import { Button, Card } from "./ui";
 export function ExportPanel() {
   const spec = useProjectStore((s) => s.spec);
   const profileId = useProjectStore((s) => s.profileId);
+  const portLineStyle = useProjectStore((s) => s.portLineStyle);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -24,8 +25,8 @@ export function ExportPanel() {
     setMessage("Генерація пакета…");
     try {
       const [full, compact] = await Promise.all([
-        buildEngraving(spec, profile, { format: "full" }),
-        buildEngraving(spec, profile, { format: "compact" }),
+        buildEngraving(spec, profile, { format: "full", portLineStyle }),
+        buildEngraving(spec, profile, { format: "compact", portLineStyle }),
       ]);
       const barcode = await buildBarcode(spec.ean13);
       const sticker = buildSticker(spec, profile);
@@ -36,7 +37,7 @@ export function ExportPanel() {
         engravingFullDxf: full.dxf,
         engravingCompactSvg: compact.svg,
         engravingCompactDxf: compact.dxf,
-        engravingTextFull: buildEngravingPlan(spec, profile, "full").text,
+        engravingTextFull: buildEngravingPlan(spec, profile, { format: "full", portLineStyle }).text,
         stickerText: sticker.text,
         barcodeSvg: barcode.valid ? barcode.svg : "",
         barcodePngDataUrl: barcode.valid ? barcode.pngDataUrl : "",

@@ -1,6 +1,6 @@
 import type { EngravingFormat, EngravingResult, ProductSpec } from "../types";
 import type { BrandProfile } from "../profiles";
-import { buildEngravingPlan } from "./engravingPlan";
+import { buildEngravingPlan, type PortLineStyle } from "./engravingPlan";
 
 interface OtPath {
   toPathData(precision?: number): string;
@@ -92,6 +92,10 @@ function symbolDraw(font: OtFont, name: string, x: number, y: number, s: number)
       return textSymbol(font, "RoHS", x, y, s * 0.78);
     case "EAC":
       return textSymbol(font, "EAC", x, y, s * 0.9);
+    case "QI":
+      return textSymbol(font, "Qi", x, y, s * 0.95);
+    case "QI2":
+      return textSymbol(font, "Qi2", x, y, s * 0.85);
     case "FCC":
       return textSymbol(font, "FCC", x, y, s * 0.9);
     default:
@@ -101,6 +105,7 @@ function symbolDraw(font: OtFont, name: string, x: number, y: number, s: number)
 
 export interface EngravingOptions {
   format?: EngravingFormat;
+  portLineStyle?: PortLineStyle;
   fontSize?: number;
   lineHeight?: number;
   margin?: number;
@@ -120,7 +125,10 @@ export async function buildEngraving(
   const symbolSize = options.symbolSize ?? 3.4;
   const maxWidth = options.maxWidth ?? 48;
 
-  const plan = buildEngravingPlan(spec, profile, options.format ?? "full");
+  const plan = buildEngravingPlan(spec, profile, {
+    format: options.format ?? "full",
+    portLineStyle: options.portLineStyle ?? "prefix",
+  });
   const textParts: string[] = [];
   const symbolParts: string[] = [];
   let y = margin + fontSize;

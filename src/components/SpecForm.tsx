@@ -2,7 +2,7 @@
 
 import { useProjectStore } from "@/store/useProjectStore";
 import { CATEGORY_META } from "@/lib/profiles";
-import { LANGUAGES } from "@/lib/i18n/locales";
+import { LANGUAGES, LANGUAGE_PRESETS } from "@/lib/i18n/locales";
 import type { Category, EngravingSection, Language, PortOutput, PortSpec } from "@/lib/types";
 import { Button, Field, NumberInput, Section, Select, TextArea, TextInput } from "./ui";
 
@@ -11,7 +11,7 @@ const CATEGORY_OPTIONS = (Object.keys(CATEGORY_META) as Category[]).map((c) => (
   label: CATEGORY_META[c].uk,
 }));
 
-const CERT_OPTIONS = ["CE", "RoHS", "RED", "WEEE", "BIN", "TREFOIL", "MOBIUS", "EAC", "FCC", "CCC"];
+const CERT_OPTIONS = ["CE", "RoHS", "RED", "WEEE", "BIN", "TREFOIL", "MOBIUS", "Qi", "Qi2", "EAC", "FCC", "CCC"];
 const SECTION_OPTIONS: { value: string; label: string }[] = [
   { value: "1", label: "1. Основні характеристики" },
   { value: "2", label: "2. Вхідні параметри" },
@@ -78,6 +78,9 @@ export function SpecForm() {
           </Field>
           <Field label="Модель / артикул">
             <TextInput value={spec.model} onChange={(v) => updateSpec({ model: v })} placeholder="RD-FC20CLEBG" />
+          </Field>
+          <Field label="Назва з 1С" hint="Без загальних слів (кабель, навушники), з кольором">
+            <TextInput value={spec.nameFrom1C} onChange={(v) => updateSpec({ nameFrom1C: v })} placeholder="RIDEA BASS LINE Black" />
           </Field>
           <Field label="Номер партії / замовлення">
             <TextInput value={spec.orderNumber} onChange={(v) => updateSpec({ orderNumber: v })} placeholder="0782" />
@@ -339,6 +342,13 @@ export function SpecForm() {
         </div>
         <div className="mt-3">
           <span className="field-label">Мови пакування ({spec.languages.length})</span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {LANGUAGE_PRESETS.map((p) => (
+              <Button key={p.id} size="sm" variant="secondary" onClick={() => updateSpec({ languages: p.languages })}>
+                {p.label}
+              </Button>
+            ))}
+          </div>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
             {LANGUAGES.map((l) => (
               <label key={l.code} className="flex items-center gap-2 text-sm text-slate-700">

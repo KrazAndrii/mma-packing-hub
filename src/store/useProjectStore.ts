@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { EngravingFormat, Language, PortSpec, ProductSpec } from "@/lib/types";
 import type { Rule } from "@/lib/rules/types";
+import type { PortLineStyle } from "@/lib/generate/engravingPlan";
 import { PROFILES, getProfile } from "@/lib/profiles";
 import { blankSpec, newId } from "@/lib/defaults";
 
@@ -17,6 +18,7 @@ interface ProjectState {
   profileId: string;
   spec: ProductSpec;
   format: EngravingFormat;
+  portLineStyle: PortLineStyle;
   rules: Rule[];
   aiApiKey: string;
   aiModel: string;
@@ -29,6 +31,7 @@ interface ProjectState {
   updatePort: (id: string, patch: Partial<PortSpec>) => void;
   removePort: (id: string) => void;
   setFormat: (f: EngravingFormat) => void;
+  setPortLineStyle: (s: PortLineStyle) => void;
   setRules: (rules: Rule[]) => void;
   updateRule: (id: string, patch: Partial<Rule>) => void;
   resetRules: () => void;
@@ -44,6 +47,7 @@ export const useProjectStore = create<ProjectState>()(
       profileId: PROFILES[0].id,
       spec: initialSpec(),
       format: "full",
+      portLineStyle: "prefix",
       rules: structuredClone(PROFILES[0].rules),
       aiApiKey: "",
       aiModel: "gemini-2.0-flash",
@@ -111,6 +115,7 @@ export const useProjectStore = create<ProjectState>()(
         set((state) => ({ spec: { ...state.spec, ports: state.spec.ports.filter((p) => p.id !== id) } })),
 
       setFormat: (format) => set({ format }),
+      setPortLineStyle: (portLineStyle) => set({ portLineStyle }),
       setRules: (rules) => set({ rules }),
       updateRule: (id, patch) =>
         set((state) => ({
@@ -135,6 +140,7 @@ export const useProjectStore = create<ProjectState>()(
         profileId: state.profileId,
         spec: state.spec,
         format: state.format,
+        portLineStyle: state.portLineStyle,
         rules: state.rules,
         aiApiKey: state.aiApiKey,
         aiModel: state.aiModel,

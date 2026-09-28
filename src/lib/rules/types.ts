@@ -50,6 +50,12 @@ export interface RegexRule extends BaseRule {
   hint?: string;
 }
 
+export interface EngravingRegexRule extends BaseRule {
+  type: "engraving_regex";
+  pattern: string;
+  hint?: string;
+}
+
 export type Rule =
   | SumPortsRule
   | RequiredCertsRule
@@ -57,7 +63,8 @@ export type Rule =
   | ForbiddenCharsRule
   | EanChecksumRule
   | RangeRule
-  | RegexRule;
+  | RegexRule
+  | EngravingRegexRule;
 
 export interface RuleResult {
   ruleId: string;

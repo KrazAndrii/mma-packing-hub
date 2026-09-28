@@ -1,4 +1,4 @@
-export type Language = "EN" | "UA" | "RO" | "BG" | "ES" | "PL";
+export type Language = "EN" | "DE" | "ES" | "FR" | "UA" | "IT" | "RO" | "PL" | "BG";
 
 export type Category =
   | "car_charger"
@@ -71,6 +71,7 @@ export interface ProductSpec {
   brand: string;
   category: Category;
   model: string;
+  nameFrom1C: string;
   orderNumber: string;
   productNameUk: string;
   color: string;

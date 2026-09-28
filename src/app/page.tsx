@@ -13,9 +13,10 @@ import { StickerPanel } from "@/components/StickerPanel";
 import { BarcodePanel } from "@/components/BarcodePanel";
 import { TranslationsPanel } from "@/components/TranslationsPanel";
 import { ExportPanel } from "@/components/ExportPanel";
+import { FilesPanel } from "@/components/FilesPanel";
 import { Button, Card, Select, StatusDot, Tabs } from "@/components/ui";
 
-type Tab = "engraving" | "specs" | "sticker" | "barcode" | "translations" | "compliance" | "export";
+type Tab = "engraving" | "specs" | "sticker" | "barcode" | "translations" | "files" | "compliance" | "export";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -30,11 +31,11 @@ export default function Home() {
 
   useEffect(() => setMounted(true), []);
 
-  const results = useMemo(() => runRules(spec, rules), [spec, rules]);
+  const profile = getProfile(profileId);
+
+  const results = useMemo(() => runRules(spec, rules, profile), [spec, rules, profile]);
   const errors = results.filter((r) => !r.passed && r.severity === "error").length;
   const warnings = results.filter((r) => !r.passed && r.severity === "warning").length;
-
-  const profile = getProfile(profileId);
 
   if (!mounted) {
     return (
@@ -104,6 +105,7 @@ export default function Home() {
               { value: "sticker", label: "Стікер (КМ)" },
               { value: "barcode", label: "Штрихкод" },
               { value: "translations", label: "Переклади" },
+              { value: "files", label: "Файли (Bitrix24)" },
               { value: "compliance", label: "Комплаєнс", badge: errors || undefined },
               { value: "export", label: "Експорт" },
             ]}
@@ -113,6 +115,7 @@ export default function Home() {
           {tab === "sticker" ? <StickerPanel /> : null}
           {tab === "barcode" ? <BarcodePanel /> : null}
           {tab === "translations" ? <TranslationsPanel /> : null}
+          {tab === "files" ? <FilesPanel /> : null}
           {tab === "compliance" ? <CompliancePanel /> : null}
           {tab === "export" ? <ExportPanel /> : null}
         </Card>

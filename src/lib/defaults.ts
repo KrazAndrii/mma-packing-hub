@@ -13,6 +13,7 @@ export function blankSpec(profile: BrandProfile): ProductSpec {
     brand: profile.name,
     category: "other",
     model: "",
+    nameFrom1C: "",
     orderNumber: "",
     productNameUk: "",
     color: "",

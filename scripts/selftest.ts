@@ -17,7 +17,7 @@ console.log(specLinesToText(buildSpecLines(spec, "UA")));
 console.log("\n=== STICKER (UA, перші 400 символів) ===");
 console.log(buildSticker(spec, profile).text.slice(0, 400));
 console.log("\n=== COMPLIANCE ===");
-for (const r of runRules(spec, profile.rules)) {
+for (const r of runRules(spec, profile.rules, profile)) {
   console.log(`${r.passed ? "OK " : "!! "} ${r.title}${r.details?.length ? " — " + r.details.join("; ") : ""}`);
 }
 console.log("\n=== MARKETING (UA) ===");

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
+import { getProfile } from "@/lib/profiles";
 import { runRules } from "@/lib/rules/engine";
 import type { Rule } from "@/lib/rules/types";
 import { Button, Card, Select, StatusDot, TextInput } from "./ui";
@@ -10,12 +11,14 @@ const SEVERITY_ORDER: Record<string, number> = { error: 0, warning: 1, info: 2 }
 
 export function CompliancePanel() {
   const spec = useProjectStore((s) => s.spec);
+  const profileId = useProjectStore((s) => s.profileId);
   const rules = useProjectStore((s) => s.rules);
   const updateRule = useProjectStore((s) => s.updateRule);
   const resetRules = useProjectStore((s) => s.resetRules);
   const [editing, setEditing] = useState(false);
 
-  const results = useMemo(() => runRules(spec, rules), [spec, rules]);
+  const profile = getProfile(profileId);
+  const results = useMemo(() => runRules(spec, rules, profile), [spec, rules, profile]);
 
   const sorted = [...results].sort((a, b) => {
     if (a.passed !== b.passed) return a.passed ? 1 : -1;

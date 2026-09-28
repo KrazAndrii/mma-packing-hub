@@ -1,5 +1,7 @@
 import type { ProductSpec } from "../types";
+import type { BrandProfile } from "../profiles";
 import type { Rule, RuleResult } from "./types";
+import { buildEngravingPlan } from "../generate/engravingPlan";
 
 export function ean13Checksum(ean: string): { valid: boolean; expected: string; reason?: string } {
   const clean = (ean || "").replace(/\D/g, "");
@@ -42,8 +44,8 @@ function applies(rule: Rule, spec: ProductSpec): boolean {
   return rule.categories.includes(spec.category);
 }
 
-export function runRules(spec: ProductSpec, rules: Rule[]): RuleResult[] {
-  return rules.filter((r) => applies(r, spec)).map((rule) => evaluate(rule, spec));
+export function runRules(spec: ProductSpec, rules: Rule[], profile?: BrandProfile): RuleResult[] {
+  return rules.filter((r) => applies(r, spec)).map((rule) => evaluate(rule, spec, profile));
 }
 
 function pass(rule: Rule): RuleResult {
@@ -61,7 +63,7 @@ function fail(rule: Rule, details?: string[]): RuleResult {
   };
 }
 
-function evaluate(rule: Rule, spec: ProductSpec): RuleResult {
+function evaluate(rule: Rule, spec: ProductSpec, profile?: BrandProfile): RuleResult {
   switch (rule.type) {
     case "sum_ports_equals_total": {
       const sum = spec.ports.reduce((acc, p) => acc + (Number(p.maxW) || 0), 0);
@@ -141,6 +143,20 @@ function evaluate(rule: Rule, spec: ProductSpec): RuleResult {
       if (isBlank(raw)) return pass(rule);
       const re = new RegExp(rule.pattern);
       if (!re.test(raw)) return fail(rule, [rule.hint ?? `«${raw}» не відповідає шаблону`]);
+      return pass(rule);
+    }
+
+    case "engraving_regex": {
+      if (!profile) return pass(rule);
+      const re = new RegExp(rule.pattern);
+      const hits: string[] = [];
+      for (const format of ["full", "compact"] as const) {
+        const text = buildEngravingPlan(spec, profile, { format }).text;
+        for (const line of text.split("\n")) {
+          if (re.test(line)) hits.push(`[${format}] ${line}`);
+        }
+      }
+      if (hits.length) return fail(rule, [...(rule.hint ? [rule.hint] : []), ...hits.slice(0, 4)]);
       return pass(rule);
     }
 

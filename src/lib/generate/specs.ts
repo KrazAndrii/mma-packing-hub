@@ -22,11 +22,14 @@ export interface SpecLine {
 
 const BATTERY_LABEL: Record<Language, string> = {
   EN: "Battery capacity",
-  UA: "Ємність акумулятора",
-  RO: "Capacitate baterie",
-  BG: "Капацитет на батерията",
+  DE: "Akkukapazität",
   ES: "Capacidad de la batería",
+  FR: "Capacité de la batterie",
+  UA: "Ємність акумулятора",
+  IT: "Capacità della batteria",
+  RO: "Capacitate baterie",
   PL: "Pojemność baterii",
+  BG: "Капацитет на батерията",
 };
 
 export function portLines(port: PortSpec, lang: Language): string[] {
@@ -58,9 +61,9 @@ export function buildSpecLines(spec: ProductSpec, lang: Language): SpecLine[] {
   }
   if (spec.battery && (spec.battery.capacityMah || spec.battery.wh)) {
     const parts: string[] = [];
-    if (spec.battery.capacityMah) parts.push(`${trimNum(spec.battery.capacityMah)} mAh`);
+    if (spec.battery.capacityMah) parts.push(`${trimNum(spec.battery.capacityMah)} ${u.mAh}`);
     if (spec.battery.voltage && spec.battery.wh) {
-      parts.push(`${trimNum(spec.battery.voltage)} ${u.V} / ${trimNum(spec.battery.wh)} Wh`);
+      parts.push(`${trimNum(spec.battery.voltage)} ${u.V} / ${trimNum(spec.battery.wh)} ${u.Wh}`);
     }
     lines.push({ label: BATTERY_LABEL[lang], value: parts.join(", ") });
   }
