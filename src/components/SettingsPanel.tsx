@@ -82,16 +82,6 @@ export function SettingsPanel() {
               ]}
             />
           </Field>
-          <Field label="Формат рядків портів">
-            <Select<"prefix" | "suffix">
-              value={settings.portLineStyle}
-              onChange={(v) => updateSettings({ portLineStyle: v })}
-              options={[
-                { value: "prefix", label: "Output USB-C (регламент)" },
-                { value: "suffix", label: "USB-C Output (таблиця)" },
-              ]}
-            />
-          </Field>
         </div>
       </Section>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
@@ -77,6 +77,43 @@ export function TextInput({
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
+      className={`${inputClass} ${className}`}
+    />
+  );
+}
+
+export function DraftInput({
+  value,
+  onChange,
+  placeholder,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [raw, setRaw] = useState(value);
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setRaw(value);
+  }, [value]);
+  return (
+    <input
+      type="text"
+      value={raw}
+      placeholder={placeholder}
+      onFocus={() => {
+        focused.current = true;
+      }}
+      onBlur={() => {
+        focused.current = false;
+        setRaw(value);
+      }}
+      onChange={(e) => {
+        setRaw(e.target.value);
+        onChange(e.target.value);
+      }}
       className={`${inputClass} ${className}`}
     />
   );

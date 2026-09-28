@@ -79,12 +79,13 @@ function evaluate(rule: Rule, spec: ProductSpec, profile?: BrandProfile): RuleRe
       }
       if (total > sum + tol) {
         return fail(rule, [
-          `Total Output (${total} Вт) більший за суму портів (${sum} Вт) — фізично неможливо.`,
+          `Total Output (${total} Вт) більший за суму всіх портів (${sum} Вт) — так бути не може.`,
         ]);
       }
       if (total < maxPort - tol) {
         return fail(rule, [
           `Total Output (${total} Вт) менший за найпотужніший порт (${maxPort} Вт).`,
+          "У спеках фабрики суперечність: або Total Output занижений, або порт завищений. Уточніть значення.",
         ]);
       }
       return pass(rule);

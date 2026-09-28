@@ -65,6 +65,7 @@ interface AppState {
   addProduct: () => void;
   duplicateProduct: (id: string) => void;
   deleteProduct: (id: string) => void;
+  clearAll: () => void;
   updateProduct: (id: string, patch: Partial<Product>) => void;
   updateSpec: (id: string, patch: Partial<ProductSpec>) => void;
   applyParse: (id: string, patch: Partial<ProductSpec>, categoryId?: string) => void;
@@ -130,6 +131,8 @@ export const useAppStore = create<AppState>()(
           const activeId = state.activeId === id ? (products[0]?.id ?? null) : state.activeId;
           return { products, activeId };
         }),
+
+      clearAll: () => set({ products: [], activeId: null }),
 
       updateProduct: (id, patch) =>
         set((state) => ({

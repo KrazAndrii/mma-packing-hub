@@ -39,7 +39,7 @@ export function EngravingPanel() {
     setError("");
     buildEngraving(product.spec, getProfile(useAppStore.getState().brandId), {
       format: settings.engravingFormat,
-      portLineStyle: settings.portLineStyle,
+      portLineStyle: "prefix",
     })
       .then((r) => !cancelled && setResult(r))
       .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Помилка"));
@@ -273,6 +273,58 @@ export function CheckPanel() {
         ))}
       </div>
       <CopyableText title="Зауваження для фабрики (копіювати, не файл)" text={report || "Зауважень немає."} rows={8} />
+    </div>
+  );
+}
+
+export function ValidationBar() {
+  const { product, rules, profile } = useActive();
+  const [open, setOpen] = useState(false);
+  if (!product) return null;
+
+  const results = runRules(product.spec, rules, profile);
+  const issues = results.filter((r) => !r.passed);
+  const errors = issues.filter((r) => r.severity === "error").length;
+  const warnings = issues.filter((r) => r.severity === "warning").length;
+
+  const tone = errors ? "red" : warnings ? "amber" : "green";
+  const toneClasses: Record<string, string> = {
+    red: "border-red-200 bg-red-50 text-red-700",
+    amber: "border-amber-200 bg-amber-50 text-amber-800",
+    green: "border-green-200 bg-green-50 text-green-700",
+  };
+
+  const report = issues
+    .map((r) => `[${r.severity === "error" ? "ПОМИЛКА" : "УВАГА"}] ${r.title}: ${r.message}${r.details?.length ? " — " + r.details.join("; ") : ""}`)
+    .join("\n");
+
+  return (
+    <div className={`border-b ${toneClasses[tone]}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-1.5 text-left text-xs"
+      >
+        <span className="flex items-center gap-2">
+          <StatusDot severity={errors ? "error" : warnings ? "warning" : "ok"} />
+          Перевірка в реальному часі:{" "}
+          {issues.length === 0 ? "зауважень немає" : `${errors} помилок, ${warnings} попереджень`}
+        </span>
+        {issues.length ? <span className="opacity-70">{open ? "згорнути" : "детальніше"}</span> : null}
+      </button>
+      {open && issues.length ? (
+        <div className="fade-in space-y-1 px-4 pb-2">
+          {issues.map((r) => (
+            <div key={r.ruleId} className="text-[11px]">
+              <span className="font-semibold">{r.title}:</span> {r.message}
+              {r.details?.length ? <span className="opacity-80"> — {r.details.join("; ")}</span> : null}
+            </div>
+          ))}
+          <div className="pt-1">
+            <CopyButton text={report} label="Копіювати зауваження для фабрики" />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

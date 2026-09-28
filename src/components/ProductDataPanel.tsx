@@ -6,32 +6,26 @@ import { getCategory } from "@/lib/categories";
 import { LANGUAGES, LANGUAGE_PRESETS } from "@/lib/i18n/locales";
 import { parseSpecText, type ParseOutput } from "@/lib/parse/specParser";
 import { aiParseSpec } from "@/lib/ai/provider";
+import { runRules } from "@/lib/rules/engine";
+import { getProfile } from "@/lib/profiles";
 import type { Language, PortOutput, PortSpec, ProductSpec } from "@/lib/types";
-import { Badge, Button, CopyableText, Field, NumberInput, Section, Select, TextArea, TextInput } from "./ui";
+import { Badge, Button, CopyableText, DraftInput, Field, NumberInput, Section, Select, TextArea, TextInput } from "./ui";
 
 function ListField({
   value,
   onChange,
   placeholder,
-  hint,
 }: {
   value: string[];
   onChange: (next: string[]) => void;
   placeholder?: string;
   hint?: string;
 }) {
-  const [raw, setRaw] = useState(value.join(", "));
-  useEffect(() => {
-    setRaw(value.join(", "));
-  }, [value]);
   return (
-    <TextInput
-      value={raw}
+    <DraftInput
+      value={value.join(", ")}
       placeholder={placeholder}
-      onChange={(v) => {
-        setRaw(v);
-        onChange(v.split(",").map((x) => x.trim()).filter(Boolean));
-      }}
+      onChange={(v) => onChange(v.split(",").map((x) => x.trim()).filter(Boolean))}
     />
   );
 }
@@ -77,6 +71,14 @@ export function ProductDataPanel() {
   const product = products.find((p) => p.id === activeId) ?? null;
   const spec = product?.spec;
   const category = getCategory(categories, product?.category ?? "azu");
+  const rules = useAppStore((s) => s.rules);
+  const brandId = useAppStore((s) => s.brandId);
+  const profile = getProfile(brandId);
+
+  const previewIssues =
+    parseResult && spec
+      ? runRules({ ...spec, ...parseResult.patch } as ProductSpec, rules, profile).filter((r) => !r.passed)
+      : [];
 
   useEffect(() => {
     setParseResult(null);
@@ -159,13 +161,20 @@ export function ProductDataPanel() {
               <span className="text-xs text-slate-400">(змініть нижче за потреби)</span>
             </p>
           ) : null}
-          {parseResult.warnings.length ? (
-            <div className="mb-3 rounded-md bg-amber-50 p-3 text-xs text-amber-800">
-              {parseResult.warnings.map((w, i) => (
-                <p key={i}>• {w}</p>
+          {previewIssues.length ? (
+            <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              <p className="mb-1 font-semibold">Перевірка в реальному часі</p>
+              {previewIssues.map((r, i) => (
+                <p key={i}>
+                  • <b>{r.title}:</b> {r.message} {r.details?.join("; ")}
+                </p>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <p className="mb-3 rounded-md border border-green-200 bg-green-50 p-2 text-xs text-green-700">
+              Перевірка в реальному часі: зауважень немає.
+            </p>
+          )}
           <div className="mb-3 space-y-1">
             {parseResult.recognized.map((r, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
@@ -293,7 +302,7 @@ export function ProductDataPanel() {
                   />
                 </Field>
                 <Field label="Вихід: V/A через кому">
-                  <TextInput
+                  <DraftInput
                     value={outputText(port.outputs)}
                     onChange={(v) => updateSpec(product.id, { ports: spec.ports.map((p) => (p.id === port.id ? { ...p, outputs: parseOutputText(v) } : p)) })}
                     placeholder="5/3, 9/2.22"

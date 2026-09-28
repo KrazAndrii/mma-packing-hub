@@ -320,11 +320,16 @@ export function parseSpecText(raw: string): ParseOutput {
   }
   if (best && bestScore >= 1) detectedCategory = best;
 
-  const sumPorts = ports.filter((p) => p.direction !== "input").reduce((a, p) => a + p.maxW, 0);
+  const outputPorts = ports.filter((p) => p.direction !== "input");
+  const sumPorts = outputPorts.reduce((a, p) => a + p.maxW, 0);
+  const maxPort = outputPorts.reduce((a, p) => Math.max(a, p.maxW), 0);
   const declared = patch.totalOutputW ?? 0;
   if (declared && sumPorts && declared > sumPorts + 0.05) {
+    warnings.push(`Total Output (${declared} Вт) більший за суму всіх портів (${sumPorts} Вт) — так бути не може.`);
+  }
+  if (declared && maxPort && declared < maxPort - 0.05) {
     warnings.push(
-      `Сума портів (${sumPorts} W) менша за Total Output (${declared} W) — перевірте специфікацію фабрики.`,
+      `Total Output (${declared} Вт) менший за найпотужніший порт (${maxPort} Вт) — у спеках фабрики суперечність.`,
     );
   }
 

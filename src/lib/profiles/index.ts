@@ -19,9 +19,9 @@ export function baseRules(): Rule[] {
     {
       id: "sum-ports-consistency",
       type: "sum_ports_equals_total",
-      title: "Сума потужностей портів",
-      severity: "error",
-      message: "Заявлена загальна потужність не узгоджується з потужностями портів.",
+      title: "Загальна потужність і порти",
+      severity: "warning",
+      message: "Цифри у спеках фабрики суперечать одна одній — уточніть, яка правильна.",
       categories: "all",
       enabled: true,
       toleranceW: 0.05,
