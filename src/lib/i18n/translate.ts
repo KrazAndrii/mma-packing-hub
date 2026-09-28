@@ -1,5 +1,5 @@
 import type { Language, ProductSpec } from "../types";
-import { buildSpecLines, categoryName, trimNum, type SpecLine } from "../generate/specs";
+import { buildSpecLines, trimNum, type SpecLine } from "../generate/specs";
 
 export function buildSpecTranslations(
   spec: ProductSpec,
@@ -129,6 +129,6 @@ export function specLinesToText(lines: SpecLine[]): string {
     .join("\n");
 }
 
-export function productHeading(spec: ProductSpec, lang: Language): string {
-  return `${spec.brand} ${spec.model} — ${categoryName(spec, lang)}`;
+export function productHeading(spec: ProductSpec): string {
+  return `${spec.brand} ${spec.model} — ${spec.productNameUk}`;
 }

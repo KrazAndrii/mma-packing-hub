@@ -1,125 +1,60 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useProjectStore } from "@/store/useProjectStore";
-import { PROFILES, getProfile } from "@/lib/profiles";
-import { runRules } from "@/lib/rules/engine";
-import { CATEGORY_META } from "@/lib/profiles";
-import { SpecForm } from "@/components/SpecForm";
-import { CompliancePanel } from "@/components/CompliancePanel";
-import { EngravingPanel } from "@/components/EngravingPanel";
-import { SpecsPanel } from "@/components/SpecsPanel";
+import { useEffect, useState } from "react";
+import { useAppStore } from "@/store/useAppStore";
+import { Sidebar, type View } from "@/components/Sidebar";
+import { ProductDataPanel } from "@/components/ProductDataPanel";
+import { UtpPanel } from "@/components/UtpPanel";
 import { StickerPanel } from "@/components/StickerPanel";
-import { BarcodePanel } from "@/components/BarcodePanel";
-import { TranslationsPanel } from "@/components/TranslationsPanel";
-import { ExportPanel } from "@/components/ExportPanel";
-import { FilesPanel } from "@/components/FilesPanel";
-import { Button, Card, Select, StatusDot, Tabs } from "@/components/ui";
-
-type Tab = "engraving" | "specs" | "sticker" | "barcode" | "translations" | "files" | "compliance" | "export";
+import {
+  BarcodePanel,
+  CheckPanel,
+  CopyRowPanel,
+  EngravingPanel,
+  ExportPanel,
+  SpecsPanel,
+  TranslationsPanel,
+} from "@/components/OutputPanels";
+import { SettingsPanel } from "@/components/SettingsPanel";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  const [tab, setTab] = useState<Tab>("engraving");
-
-  const profileId = useProjectStore((s) => s.profileId);
-  const spec = useProjectStore((s) => s.spec);
-  const rules = useProjectStore((s) => s.rules);
-  const setProfile = useProjectStore((s) => s.setProfile);
-  const loadSample = useProjectStore((s) => s.loadSample);
-  const newProduct = useProjectStore((s) => s.newProduct);
+  const [view, setView] = useState<View>("data");
+  const products = useAppStore((s) => s.products);
+  const activeId = useAppStore((s) => s.activeId);
+  const setActive = useAppStore((s) => s.setActive);
 
   useEffect(() => setMounted(true), []);
-
-  const profile = getProfile(profileId);
-
-  const results = useMemo(() => runRules(spec, rules, profile), [spec, rules, profile]);
-  const errors = results.filter((r) => !r.passed && r.severity === "error").length;
-  const warnings = results.filter((r) => !r.passed && r.severity === "warning").length;
+  useEffect(() => {
+    if (!activeId && products[0]) setActive(products[0].id);
+  }, [activeId, products, setActive]);
 
   if (!mounted) {
-    return (
-      <main className="flex min-h-screen items-center justify-center text-sm text-slate-500">
-        Завантаження MMA Packing Hub…
-      </main>
-    );
+    return <main className="flex min-h-screen items-center justify-center text-sm text-slate-500">Завантаження…</main>;
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] p-4">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold text-white"
-            style={{ background: profile.accent }}
-          >
-            MMA
-          </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar view={view} onView={setView} />
+      <main className="min-w-0 flex-1 overflow-auto bg-[var(--background)]">
+        {view === "settings" ? <SettingsPanel /> : null}
+        {view === "data" ? <ProductDataPanel /> : null}
+        {view === "engraving" ? <EngravingPanel /> : null}
+        {view === "specs" ? <SpecsPanel /> : null}
+        {view === "translations" ? <TranslationsPanel /> : null}
+        {view === "utp" ? <UtpPanel /> : null}
+        {view === "sticker" ? <StickerPanel /> : null}
+        {view === "barcode" ? <BarcodePanel /> : null}
+        {view === "check" ? <CheckPanel /> : null}
+        {view === "export" ? (
           <div>
-            <h1 className="text-lg font-bold leading-tight text-slate-900">MMA Packing Hub</h1>
-            <p className="text-xs text-slate-500">
-              Гравіювання · специфікації · маркування · штрихкоди — автоматично зі специфікацій фабрики
-            </p>
+            <ExportPanel />
+            <div className="px-4 pb-6">
+              <CopyRowPanel />
+            </div>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div style={{ minWidth: 160 }}>
-            <Select<string>
-              value={profileId}
-              onChange={setProfile}
-              options={PROFILES.map((p) => ({ value: p.id, label: `Бренд: ${p.name}` }))}
-            />
-          </div>
-          <Button size="sm" variant="secondary" onClick={loadSample} disabled={profile.samples.length === 0}>
-            Приклад
-          </Button>
-          <Button size="sm" variant="secondary" onClick={newProduct}>
-            Новий товар
-          </Button>
-        </div>
-      </header>
-
-      <div className="mb-3 flex flex-wrap items-center gap-4 rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-xs text-slate-600">
-        <span className="flex items-center gap-2">
-          <StatusDot severity={errors ? "error" : "ok"} />
-          Комплаєнс: <b>{errors}</b> помилок, <b>{warnings}</b> попереджень
-        </span>
-        <span>
-          {spec.brand} · {CATEGORY_META[spec.category].uk} · {spec.model || "без моделі"} ·{" "}
-          {spec.languages.length} мов
-        </span>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[440px_1fr]">
-        <Card className="max-h-[calc(100vh-160px)] overflow-auto">
-          <SpecForm />
-        </Card>
-
-        <Card className="max-h-[calc(100vh-160px)] overflow-auto">
-          <Tabs<Tab>
-            value={tab}
-            onChange={setTab}
-            tabs={[
-              { value: "engraving", label: "Гравіювання" },
-              { value: "specs", label: "Спеки" },
-              { value: "sticker", label: "Стікер (КМ)" },
-              { value: "barcode", label: "Штрихкод" },
-              { value: "translations", label: "Переклади" },
-              { value: "files", label: "Файли (Bitrix24)" },
-              { value: "compliance", label: "Комплаєнс", badge: errors || undefined },
-              { value: "export", label: "Експорт" },
-            ]}
-          />
-          {tab === "engraving" ? <EngravingPanel /> : null}
-          {tab === "specs" ? <SpecsPanel /> : null}
-          {tab === "sticker" ? <StickerPanel /> : null}
-          {tab === "barcode" ? <BarcodePanel /> : null}
-          {tab === "translations" ? <TranslationsPanel /> : null}
-          {tab === "files" ? <FilesPanel /> : null}
-          {tab === "compliance" ? <CompliancePanel /> : null}
-          {tab === "export" ? <ExportPanel /> : null}
-        </Card>
-      </div>
-    </main>
+        ) : null}
+      </main>
+    </div>
   );
 }

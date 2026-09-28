@@ -1,4 +1,4 @@
-import type { Category, Language } from "../types";
+import type { Language } from "../types";
 
 export const LANGUAGES: { code: Language; label: string; flag: string }[] = [
   { code: "EN", label: "English", flag: "🇬🇧" },
@@ -12,7 +12,6 @@ export const LANGUAGES: { code: Language; label: string; flag: string }[] = [
   { code: "BG", label: "Български", flag: "🇧🇬" },
 ];
 
-// Матриця мовних сценаріїв (регламент ЗЕД MMA)
 export const LANGUAGE_PRESETS: { id: string; label: string; languages: Language[] }[] = [
   {
     id: "standard8",
@@ -29,97 +28,6 @@ export const LANGUAGE_PRESETS: { id: string; label: string; languages: Language[
 export const INSTRUCTION_LANGUAGES = [
   "EN", "DE", "ES", "FR", "UA", "IT", "RO", "PL", "AR", "ZH", "PT", "BG", "KK", "UZ", "RU",
 ];
-
-export const CATEGORY_NAMES: Record<Category, Record<Language, string>> = {
-  car_charger: {
-    EN: "Car charger",
-    DE: "Auto-Ladegerät",
-    ES: "Cargador de coche",
-    FR: "Chargeur de voiture",
-    UA: "Автомобільний зарядний пристрій",
-    IT: "Caricatore da auto",
-    RO: "Încărcător auto",
-    PL: "Ładowarka samochodowa",
-    BG: "Автомобилно зарядно устройство",
-  },
-  wall_charger: {
-    EN: "Wall charger",
-    DE: "Netzteil-Ladegerät",
-    ES: "Cargador de pared",
-    FR: "Chargeur secteur",
-    UA: "Мережевий зарядний пристрій",
-    IT: "Caricatore da parete",
-    RO: "Încărcător de rețea",
-    PL: "Ładowarka sieciowa",
-    BG: "Мрежово зарядно устройство",
-  },
-  power_bank: {
-    EN: "Power bank",
-    DE: "Powerbank",
-    ES: "Batería externa",
-    FR: "Batterie externe",
-    UA: "Портативний акумулятор (павербанк)",
-    IT: "Power bank",
-    RO: "Baterie externă",
-    PL: "Power bank",
-    BG: "Външна батерия",
-  },
-  cable: {
-    EN: "USB cable",
-    DE: "USB-Kabel",
-    ES: "Cable USB",
-    FR: "Câble USB",
-    UA: "Кабель USB",
-    IT: "Cavo USB",
-    RO: "Cablu USB",
-    PL: "Kabel USB",
-    BG: "USB кабел",
-  },
-  tws: {
-    EN: "True wireless earbuds",
-    DE: "True-Wireless-Kopfhörer",
-    ES: "Auriculares inalámbricos",
-    FR: "Écouteurs sans fil",
-    UA: "Бездротові навушники (TWS)",
-    IT: "Auricolari wireless",
-    RO: "Căști wireless",
-    PL: "Słuchawki bezprzewodowe",
-    BG: "Безжични слушалки",
-  },
-  case: {
-    EN: "Case",
-    DE: "Hülle",
-    ES: "Funda",
-    FR: "Coque",
-    UA: "Чохол",
-    IT: "Custodia",
-    RO: "Husă",
-    PL: "Etui",
-    BG: "Калъф",
-  },
-  glass: {
-    EN: "Screen protector",
-    DE: "Displayschutzfolie",
-    ES: "Protector de pantalla",
-    FR: "Protection d'écran",
-    UA: "Захисне скло",
-    IT: "Protezione schermo",
-    RO: "Folie de protecție",
-    PL: "Szkło ochronne",
-    BG: "Протектор за екран",
-  },
-  other: {
-    EN: "Device",
-    DE: "Gerät",
-    ES: "Dispositivo",
-    FR: "Appareil",
-    UA: "Пристрій",
-    IT: "Dispositivo",
-    RO: "Dispozitiv",
-    PL: "Urządzenie",
-    BG: "Устройство",
-  },
-};
 
 interface SpecLabels {
   totalPower: string;
@@ -144,7 +52,6 @@ export const SPEC_LABELS: Record<Language, SpecLabels> = {
   BG: { totalPower: "Обща мощност", inputVoltage: "Входно напрежение", outputPower: "Изходна мощност", max: "Макс.", output: "Изход", input: "Вход", model: "Модел", protocols: "Протоколи" },
 };
 
-// Одиниці СІ — міжнародні символи. UA/BG блок використовує кирилицю (регламент ЗЕД).
 export const UNITS: Record<Language, { V: string; A: string; W: string; mAh: string; Wh: string }> = {
   EN: { V: "V", A: "A", W: "W", mAh: "mAh", Wh: "Wh" },
   DE: { V: "V", A: "A", W: "W", mAh: "mAh", Wh: "Wh" },

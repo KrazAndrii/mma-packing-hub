@@ -1,5 +1,5 @@
 import type { Language, PortOutput, PortSpec, ProductSpec } from "../types";
-import { CATEGORY_NAMES, SPEC_LABELS, UNITS } from "../i18n/locales";
+import { SPEC_LABELS, UNITS } from "../i18n/locales";
 
 export function trimNum(value: number | string): string {
   const s = String(value).trim();
@@ -84,8 +84,4 @@ export function buildSpecLines(spec: ProductSpec, lang: Language): SpecLine[] {
     if (extra.label || extra.value) lines.push({ label: extra.label, value: extra.value });
   }
   return lines;
-}
-
-export function categoryName(spec: ProductSpec, lang: Language): string {
-  return CATEGORY_NAMES[spec.category][lang];
 }

@@ -1,8 +1,8 @@
-import type { Category, Language, ProductSpec } from "../types";
+import type { Language, ProductSpec } from "../types";
 
-export interface AiResult {
+export interface AiResult<T> {
   ok: boolean;
-  bullets?: Record<string, string[]>;
+  data?: T;
   error?: string;
 }
 
@@ -14,41 +14,57 @@ export function specSummary(spec: ProductSpec): string {
     )
     .join("; ");
   return [
-    `Brand: ${spec.brand}`,
     `Category: ${spec.category}`,
     `Model: ${spec.model}`,
-    `Product (UA): ${spec.productNameUk}`,
     `Total output: ${spec.totalOutputW}W`,
     `Input: ${spec.input.kind} ${spec.input.voltage}V`,
     `Ports: ${ports}`,
     spec.battery?.capacityMah ? `Battery: ${spec.battery.capacityMah}mAh ${spec.battery.wh ?? ""}Wh` : "",
+    spec.driverSize ? `Driver: ${spec.driverSize}` : "",
+    spec.audioCodecs ? `Codecs: ${spec.audioCodecs}` : "",
+    spec.magneticForce ? `Magnets: ${spec.magneticForce}` : "",
+    spec.technologies.length ? `Technologies: ${spec.technologies.join(", ")}` : "",
     spec.material ? `Material: ${spec.material}` : "",
   ]
     .filter(Boolean)
     .join("\n");
 }
 
-export async function generateBulletsAI(
-  spec: ProductSpec,
-  languages: Language[],
-  apiKey: string,
-  model = "gemini-2.0-flash",
-): Promise<AiResult> {
+async function post<T>(body: Record<string, unknown>): Promise<AiResult<T>> {
   try {
     const res = await fetch("/api/ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        summary: specSummary(spec),
-        category: spec.category as Category,
-        languages,
-        apiKey,
-        model,
-      }),
+      body: JSON.stringify(body),
     });
-    const data = (await res.json()) as AiResult;
+    const data = (await res.json()) as { ok: boolean; data?: T; error?: string };
     return data;
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Помилка звернення до ШІ" };
   }
+}
+
+export function aiUtp(
+  spec: ProductSpec,
+  apiKey: string,
+  model: string,
+): Promise<AiResult<string[]>> {
+  return post<string[]>({ action: "utp", summary: specSummary(spec), apiKey, model });
+}
+
+export function aiParseSpec(
+  rawSpec: string,
+  apiKey: string,
+  model: string,
+): Promise<AiResult<Record<string, unknown>>> {
+  return post<Record<string, unknown>>({ action: "parse", rawSpec, apiKey, model });
+}
+
+export function aiTranslateBullets(
+  bullets: string[],
+  languages: Language[],
+  apiKey: string,
+  model: string,
+): Promise<AiResult<Record<string, string[]>>> {
+  return post<Record<string, string[]>>({ action: "translate", bullets, languages, apiKey, model });
 }

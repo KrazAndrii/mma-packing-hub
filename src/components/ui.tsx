@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
@@ -226,3 +226,80 @@ export function StatusDot({ severity }: { severity: "error" | "warning" | "info"
   };
   return <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${colors[severity]}`} />;
 }
+
+export function CopyButton({ text, label = "Копіювати" }: { text: string; label?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setDone(true);
+          setTimeout(() => setDone(false), 1500);
+        } catch {
+          setDone(false);
+        }
+      }}
+      className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+    >
+      {done ? "Скопійовано" : label}
+    </button>
+  );
+}
+
+export function CopyableText({
+  text,
+  title,
+  rows = 8,
+}: {
+  text: string;
+  title: string;
+  rows?: number;
+}) {
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-white">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2">
+        <span className="text-xs font-semibold text-slate-600">{title}</span>
+        <CopyButton text={text} />
+      </div>
+      <pre
+        className="overflow-auto px-3 py-3 font-mono text-xs whitespace-pre-wrap text-slate-700"
+        style={{ maxHeight: `${rows * 1.6}rem` }}
+      >
+        {text || "—"}
+      </pre>
+    </div>
+  );
+}
+
+export function VariableText({ template }: { template: string }) {
+  const parts = template.split(/(\{\{\s*[a-zA-Z0-9_]+\s*\}\})/g);
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-white px-3 py-3 text-[13px] leading-relaxed whitespace-pre-wrap">
+      {parts.map((part, i) =>
+        /^\{\{/.test(part) ? (
+          <span key={i} className="rounded bg-red-50 px-0.5 font-semibold text-red-600">
+            {part}
+          </span>
+        ) : (
+          <span key={i} className="text-slate-700">
+            {part}
+          </span>
+        ),
+      )}
+    </div>
+  );
+}
+
+export function Badge({ children, tone = "gray" }: { children: ReactNode; tone?: "gray" | "green" | "amber" | "red" | "blue" }) {
+  const tones: Record<string, string> = {
+    gray: "bg-slate-100 text-slate-600",
+    green: "bg-green-100 text-green-700",
+    amber: "bg-amber-100 text-amber-700",
+    red: "bg-red-100 text-red-700",
+    blue: "bg-blue-100 text-blue-700",
+  };
+  return <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-medium ${tones[tone]}`}>{children}</span>;
+}
+

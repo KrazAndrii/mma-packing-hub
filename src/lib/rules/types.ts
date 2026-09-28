@@ -1,11 +1,11 @@
-import type { Category, Severity } from "../types";
+import type { Severity } from "../types";
 
 export interface BaseRule {
   id: string;
   title: string;
   severity: Severity;
   message: string;
-  categories: Category[] | "all";
+  categories: string[] | "all";
   enabled: boolean;
 }
 

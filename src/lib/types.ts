@@ -1,16 +1,12 @@
 export type Language = "EN" | "DE" | "ES" | "FR" | "UA" | "IT" | "RO" | "PL" | "BG";
 
-export type Category =
-  | "car_charger"
-  | "wall_charger"
-  | "power_bank"
-  | "cable"
-  | "tws"
-  | "case"
-  | "glass"
-  | "other";
-
 export type Severity = "error" | "warning" | "info";
+
+export type EngravingSection = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export type EngravingFormat = "full" | "compact";
+
+export type PortLineStyle = "prefix" | "suffix";
 
 export interface CompanyInfo {
   name: string;
@@ -50,10 +46,6 @@ export interface Dimensions {
   height: number;
 }
 
-export type EngravingSection = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-export type EngravingFormat = "full" | "compact";
-
 export interface BatterySpec {
   capacityMah?: number;
   voltage?: number;
@@ -67,9 +59,8 @@ export interface ExtraSpec {
 }
 
 export interface ProductSpec {
-  id: string;
   brand: string;
-  category: Category;
+  category: string;
   model: string;
   nameFrom1C: string;
   orderNumber: string;
@@ -105,6 +96,48 @@ export interface ProductSpec {
   marketingBullets: Partial<Record<Language, string[]>>;
   extraSpecs: ExtraSpec[];
   notes: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  color: string;
+  ean13: string;
+  nameSuffix: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  brandId: string;
+  category: string;
+  rawSpec: string;
+  spec: ProductSpec;
+  variants: ProductVariant[];
+  activeVariantId: string;
+  stickerData: Record<string, string>;
+  stickerText: string;
+  utpBadges: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CategoryMeta {
+  id: string;
+  uk: string;
+  en: string;
+  defaultCerts: string[];
+  wireless: boolean;
+  stickerTemplate: string;
+}
+
+export interface AppSettings {
+  importer: CompanyInfo;
+  manufacturer: CompanyInfo;
+  aiApiKey: string;
+  aiModel: string;
+  languages: Language[];
+  portLineStyle: PortLineStyle;
+  engravingFormat: EngravingFormat;
 }
 
 export interface NormalizedOutput {

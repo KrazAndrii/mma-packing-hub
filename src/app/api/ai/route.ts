@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 interface Body {
+  action?: "utp" | "parse" | "translate";
   summary?: string;
-  category?: string;
+  rawSpec?: string;
+  bullets?: string[];
   languages?: string[];
   apiKey?: string;
   model?: string;
@@ -12,12 +14,55 @@ interface Body {
 
 const LANG_NAMES: Record<string, string> = {
   EN: "English",
-  UA: "Ukrainian",
-  RO: "Romanian",
-  BG: "Bulgarian",
+  DE: "German",
   ES: "Spanish",
+  FR: "French",
+  UA: "Ukrainian",
+  IT: "Italian",
+  RO: "Romanian",
   PL: "Polish",
+  BG: "Bulgarian",
 };
+
+function buildPrompt(body: Body): string | null {
+  if (body.action === "utp") {
+    return [
+      "Ти маркетолог мобільних аксесуарів (бренди Ridea, Yoki, iNobi).",
+      "Створи 3-5 коротких англійських значків-переваг (УТП) для пакування.",
+      "Кожен значок максимум 3 слова, без емодзі, без вигаданих характеристик.",
+      'Поверни ВИКЛЮЧНО валідний JSON-масив рядків, напр.: ["20W Fast Charge","Qi2 Certified","Ultra Compact"].',
+      "",
+      "Специфікація:",
+      body.summary || "",
+    ].join("\n");
+  }
+  if (body.action === "parse") {
+    return [
+      "Ти парсер специфікацій електроніки. Мови тексту можуть бути мішані (RU/UA/EN).",
+      "Розбери текст у структурований JSON. Поверни ЛИШЕ ті поля, які реально присутні.",
+      "Схема: { model, totalOutputW, input:{kind:'AC'|'DC',voltage,current,frequency,maxW},",
+      " ports:[{type,direction:'input'|'output',outputs:[{volts,amps}],maxW,protocols:[]}],",
+      " battery:{capacityMah,voltage,wh}, conversionRate, magneticForce, driverSize, audioCodecs,",
+      " dataTransfer, technologies:[], material, dimensions:{length,width,height}, weightG, certifications:[] }.",
+      "Числа — числами, без одиниць. Негайно поверни ТІЛЬКИ валідний JSON без пояснень.",
+      "",
+      "Текст:",
+      body.rawSpec || "",
+    ].join("\n");
+  }
+  if (body.action === "translate") {
+    const langs = (body.languages || []).map((l) => `${l} (${LANG_NAMES[l] ?? l})`).join(", ");
+    return [
+      "Переклади маркетингові буллети для пакування електроніки. Збережи зміст і довжину.",
+      `Мови: ${langs}.`,
+      "Поверни ЛИШЕ валідний JSON: {\"EN\":[\"...\"],\"UA\":[\"...\"]}.",
+      "",
+      "Буллети:",
+      JSON.stringify(body.bullets || [], null, 2),
+    ].join("\n");
+  }
+  return null;
+}
 
 export async function POST(req: Request) {
   let body: Body;
@@ -33,27 +78,18 @@ export async function POST(req: Request) {
       {
         ok: false,
         error:
-          "Немає API-ключа. Додайте безкоштовний ключ Google AI Studio у налаштуваннях або змінну середовища GEMINI_API_KEY на Vercel.",
+          "Немає ключа Google AI Studio. Додайте його в «Налаштуваннях» або змінну GEMINI_API_KEY на Vercel.",
       },
       { status: 400 },
     );
   }
 
+  const prompt = buildPrompt(body);
+  if (!prompt) {
+    return NextResponse.json({ ok: false, error: "Невідома дія" }, { status: 400 });
+  }
+
   const model = body.model || "gemini-2.0-flash";
-  const languages = (body.languages || ["EN", "UA"]).slice(0, 8);
-  const langList = languages.map((l) => `${l} (${LANG_NAMES[l] ?? l})`).join(", ");
-
-  const prompt = [
-    "Ти — досвідчений маркетолог у сфері мобільних аксесуарів та зарядних пристроїв (бренди Ridea, Yoki, iNobi).",
-    "На основі технічних специфікацій товару згенеруй короткі маркетингові переваги (bullet points) для пакування.",
-    "Правила: 3-5 пунктів на мову; кожен пункт до 60 символів; без вигаданих характеристик; лише факти зі специфікації; без символів-емодзі; без лапок-ялинок.",
-    `Мови: ${langList}.`,
-    "Поверни ВИКЛЮЧНО валідний JSON без пояснень у форматі: {\"EN\": [\"...\"], \"UA\": [\"...\"]}.",
-    "",
-    "Специфікація товару:",
-    body.summary || "",
-  ].join("\n");
-
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   try {
@@ -62,32 +98,29 @@ export async function POST(req: Request) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.6, responseMimeType: "application/json" },
+        generationConfig: { temperature: 0.5, responseMimeType: "application/json" },
       }),
     });
 
     if (!res.ok) {
       const errText = await res.text();
       return NextResponse.json(
-        { ok: false, error: `ШІ-провайдер повернув помилку ${res.status}: ${errText.slice(0, 300)}` },
+        { ok: false, error: `ШІ повернув помилку ${res.status}: ${errText.slice(0, 300)}` },
         { status: 502 },
       );
     }
 
-    const data = (await res.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+    const text = (data.candidates?.[0]?.content?.parts?.[0]?.text ?? "").replace(/```json|```/g, "").trim();
 
-    let bullets: Record<string, string[]>;
+    let parsed: unknown;
     try {
-      bullets = JSON.parse(cleaned) as Record<string, string[]>;
+      parsed = JSON.parse(text);
     } catch {
       return NextResponse.json({ ok: false, error: "ШІ повернув невалідний JSON" }, { status: 502 });
     }
 
-    return NextResponse.json({ ok: true, bullets });
+    return NextResponse.json({ ok: true, data: parsed });
   } catch (e) {
     return NextResponse.json(
       { ok: false, error: e instanceof Error ? e.message : "Помилка звернення до ШІ" },
