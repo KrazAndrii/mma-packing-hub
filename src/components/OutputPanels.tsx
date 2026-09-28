@@ -39,7 +39,7 @@ export function EngravingPanel() {
     setError("");
     buildEngraving(product.spec, getProfile(useAppStore.getState().brandId), {
       format: settings.engravingFormat,
-      portLineStyle: "prefix",
+      portLineStyle: "suffix",
     })
       .then((r) => !cancelled && setResult(r))
       .catch((e: unknown) => !cancelled && setError(e instanceof Error ? e.message : "Помилка"));

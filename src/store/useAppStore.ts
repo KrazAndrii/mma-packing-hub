@@ -48,7 +48,7 @@ const defaultSettings: AppSettings = {
   aiApiKey: "",
   aiModel: "gemini-2.0-flash",
   languages: ["EN", "UA", "RO", "BG", "ES", "PL"],
-  portLineStyle: "prefix",
+  portLineStyle: "suffix",
   engravingFormat: "full",
 };
 

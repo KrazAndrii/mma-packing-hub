@@ -127,7 +127,7 @@ export async function buildEngraving(
 
   const plan = buildEngravingPlan(spec, profile, {
     format: options.format ?? "full",
-    portLineStyle: options.portLineStyle ?? "prefix",
+    portLineStyle: options.portLineStyle ?? "suffix",
   });
   const textParts: string[] = [];
   const symbolParts: string[] = [];

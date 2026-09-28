@@ -77,7 +77,7 @@ function wMax(w: number | undefined, mode: EngravingFormat): string {
   return ` (${trimNum(w)}${sp(mode)}W Max)`;
 }
 
-export function portLine(port: PortSpec, mode: EngravingFormat, style: PortLineStyle = "prefix"): string {
+export function portLine(port: PortSpec, mode: EngravingFormat, style: PortLineStyle = "suffix"): string {
   const dir = port.direction === "input" ? "Input" : "Output";
   const label =
     port.label ??
@@ -111,17 +111,16 @@ function inputLine(spec: ProductSpec, mode: EngravingFormat): string | null {
   const i = spec.input;
   if (!i.voltage) return null;
   const parts: string[] = [];
-  const kind = i.kind === "DC" ? "DC " : "";
-  parts.push(`${kind}${trimNum(i.voltage)}${sp(mode)}V`);
+  parts.push(`${trimNum(i.voltage)}${sp(mode)}V`);
   if (i.kind === "AC" && i.frequency) parts.push(`${trimNum(i.frequency)}${sp(mode)}Hz`);
   if (i.current) parts.push(`${trimNum(i.current)}${sp(mode)}A`);
-  return `Input: ${parts.join(", ")}${wMax(i.maxW, mode)}`;
+  return `${i.kind === "AC" ? "AC" : "DC"} Input: ${parts.join(", ")}${wMax(i.maxW, mode)}`;
 }
 
 export function buildEngravingPlan(spec: ProductSpec, profile: BrandProfile, options: PlanOptions | EngravingFormat = {}): EngravingPlan {
   const opts: PlanOptions = typeof options === "string" ? { format: options } : options;
   const format: EngravingFormat = opts.format ?? "full";
-  const style: PortLineStyle = opts.portLineStyle ?? "prefix";
+  const style: PortLineStyle = opts.portLineStyle ?? "suffix";
 
   const lines: PlanLine[] = [];
   const bySection = (section: EngravingSection) => spec.extraSpecs.filter((e) => e.section === section);
